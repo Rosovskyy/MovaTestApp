@@ -22,6 +22,7 @@ class HomeViewController: UIViewController {
     // MARK: - IBOutlets
     @IBOutlet private weak var searchTextField: UITextField!
     @IBOutlet private weak var tableView: UITableView!
+    @IBOutlet weak var imagesLabel: UILabel!
     
     // MARK: - Life Cycle
     override func viewDidLoad() {
@@ -44,12 +45,19 @@ class HomeViewController: UIViewController {
         // TableView
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.tableFooterView = UIView()
         tableView.register(UINib(nibName: ImageTableViewCell.id, bundle: nil), forCellReuseIdentifier: ImageTableViewCell.id)
+        
+        // Other
+        imagesLabel.isHidden = true
     }
     
     private func prepareBind() {
         viewModel?.imagesList.bind { [weak self] images in
             self?.images = images
+            if !images.isEmpty {
+                self?.imagesLabel.isHidden = false
+            }
             DispatchQueue.main.async {
                 MBProgressHUD.hide(for: self!.view, animated: true)
                 self?.tableView.reloadData()

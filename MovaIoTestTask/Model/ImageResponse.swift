@@ -22,4 +22,9 @@ extension ImageResponse {
         self.tag = tag
         self.imageURL = URL(string: imageURL)!
     }
+    
+    init(realm: ImageSearchRealm) {
+        self.tag = realm.tag
+        self.imageURL = URL(string: realm.imageURL)!
+    }
 }

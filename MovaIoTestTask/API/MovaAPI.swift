@@ -10,10 +10,10 @@ import Foundation
 
 class MovaAPI {
     
+    // Singleton
     static let shared = MovaAPI()
     
     // MARK: - Properties
-    private let session = URLSession(configuration: .default)
     private var dataTask: URLSessionDataTask?
     
     fileprivate let baseUrl = "https://api.unsplash.com/search"
@@ -23,6 +23,11 @@ class MovaAPI {
         let path = baseUrl + "/photos?client_id=\(token)&query=\(tag)"
         
         guard let url = URL(string: path) else { return }
+        
+        let sessionConfig = URLSessionConfiguration.default
+        sessionConfig.timeoutIntervalForRequest = 5
+        sessionConfig.timeoutIntervalForResource = 10
+        let session = URLSession(configuration: sessionConfig)
         
         dataTask = session.dataTask(with: url) { [weak self] data, response, error in
             defer {

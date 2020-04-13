@@ -7,10 +7,6 @@ target 'MovaIoTestTask' do
 
   # Pods for MovaIoTestTask
   
-  #DI
-  pod 'Swinject', '~> 2.6.2'
-  pod 'SwinjectStoryboard'
-  
   #Reactive
   pod 'RxSwift', '~> 5'
   pod 'RxCocoa', '~> 5'
@@ -18,6 +14,9 @@ target 'MovaIoTestTask' do
   
   #Images
   pod 'SDWebImage'
+  
+  #Database
+  pod 'RealmSwift'
   
   #Other
   pod 'SnapKit'
