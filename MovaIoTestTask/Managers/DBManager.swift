@@ -29,8 +29,8 @@ class DBManager {
     }
     
     func add(img: ImageSearchRealm) {
-        delete(img: img)
-        addData(object: img)
+        self.deleteAll()
+        self.addData(object: img)
     }
     
     func delete(img: ImageSearchRealm) {

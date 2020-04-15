@@ -31,6 +31,10 @@ extension HomeViewModel {
             var images = self.imagesList.value
             images.insert(resp, at: 0)
             self.imagesList.accept(images)
+            
+            DispatchQueue.main.async {
+                DBManager.shared.add(img: ImageSearchRealm(resp: resp))
+            }
         }) {
             self.requestFailure.accept(())
         }

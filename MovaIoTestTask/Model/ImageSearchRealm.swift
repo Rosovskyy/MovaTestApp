@@ -18,4 +18,11 @@ class ImageSearchRealm: Object, Encodable {
     override class func primaryKey() -> String? {
         return "id"
     }
+    
+    convenience init(resp: ImageResponse) {
+        self.init()
+        self.id = "generalId"
+        self.imageURL = resp.imageURL.absoluteString
+        self.tag = resp.tag
+    }
 }

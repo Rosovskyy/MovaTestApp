@@ -17,16 +17,15 @@ class MovaAPI {
     private var dataTask: URLSessionDataTask?
     
     fileprivate let baseUrl = "https://api.unsplash.com/search"
-    fileprivate let token = "LTr_ByJJkG6YPJyY3u_iOujT3yfMeZoNEvqdSbDch40&query=cat"
+    fileprivate let token = "LTr_ByJJkG6YPJyY3u_iOujT3yfMeZoNEvqdSbDch40"
     
     func getImageByTag(tag: String, success: @escaping (ImageResponse) -> (), failure: @escaping () -> ()) {
-        let path = baseUrl + "/photos?client_id=\(token)&query=\(tag)"
+        let path = baseUrl + "/photos?client_id=\(token)&query=\(tag)".replacingOccurrences(of: " ", with: "%20")
         
         guard let url = URL(string: path) else { return }
         
         let sessionConfig = URLSessionConfiguration.default
-        sessionConfig.timeoutIntervalForRequest = 5
-        sessionConfig.timeoutIntervalForResource = 10
+        sessionConfig.timeoutIntervalForResource = 8
         let session = URLSession(configuration: sessionConfig)
         
         dataTask = session.dataTask(with: url) { [weak self] data, response, error in
@@ -41,6 +40,8 @@ class MovaAPI {
                     } else {
                         failure()
                     }
+                } else {
+                    failure()
                 }
             } else {
                 failure()

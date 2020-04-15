@@ -9,6 +9,7 @@
 import UIKit
 import NSObject_Rx
 import MBProgressHUD
+import SnapKit
 
 class HomeViewController: UIViewController {
     
@@ -19,15 +20,37 @@ class HomeViewController: UIViewController {
     
     private var images = [ImageResponse]()
     
-    // MARK: - IBOutlets
-    @IBOutlet private weak var searchTextField: UITextField!
-    @IBOutlet private weak var tableView: UITableView!
-    @IBOutlet weak var imagesLabel: UILabel!
+    // MARK: - Views
+    let searchTextField: UITextField = {
+        var textField = UITextField()
+        textField.placeholder = "Type tag here"
+        textField.borderStyle = .roundedRect
+        textField.returnKeyType = .done
+        return textField
+    }()
+
+    let tableView: UITableView = {
+        return UITableView()
+    }()
+
+    let imagesLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Images:"
+        return label
+    }()
+    
+    let enterTagLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Enter the tag:"
+        return label
+    }()
     
     // MARK: - Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setupViews()
+        setupConstraints()
         setupUI()
         prepareBind()
     }
@@ -40,33 +63,69 @@ class HomeViewController: UIViewController {
         router = HomeRouter()
         
         // Delegates
+        searchTextField.addCloseButtonOnKeyboard()
         searchTextField.delegate = self
         
         // TableView
         tableView.delegate = self
         tableView.dataSource = self
         tableView.tableFooterView = UIView()
-        tableView.register(UINib(nibName: ImageTableViewCell.id, bundle: nil), forCellReuseIdentifier: ImageTableViewCell.id)
+        tableView.separatorStyle = .none
+        tableView.register(ImageTableViewCell.self, forCellReuseIdentifier: ImageTableViewCell.id)
         
-        // Other
-        imagesLabel.isHidden = true
+        // Data
+        if let lastImage = DBManager.shared.getDataFromDB(with: ImageSearchRealm.self).first {
+            viewModel?.imagesList.accept([ImageResponse(realm: lastImage)])
+        }
+    }
+    
+    private func setupViews() {
+        view.addSubview(enterTagLabel)
+        view.addSubview(searchTextField)
+        view.addSubview(imagesLabel)
+        view.addSubview(tableView)
+    }
+    
+    private func setupConstraints() {
+        enterTagLabel.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.topMargin).offset(20)
+            $0.leading.equalToSuperview().offset(20)
+        }
+        
+        searchTextField.snp.makeConstraints {
+            $0.leading.equalTo(self.enterTagLabel.snp.leading)
+            $0.trailing.equalToSuperview().offset(-20)
+            $0.top.equalTo(self.enterTagLabel.snp.bottom).offset(10)
+        }
+        
+        imagesLabel.snp.makeConstraints {
+            $0.leading.equalTo(self.enterTagLabel.snp.leading)
+            $0.top.equalTo(self.searchTextField.snp.bottom).offset(18)
+        }
+        
+        tableView.snp.makeConstraints {
+            $0.top.equalTo(self.imagesLabel.snp.bottom)
+            $0.leading.trailing.bottom.equalToSuperview()
+        }
     }
     
     private func prepareBind() {
         viewModel?.imagesList.bind { [weak self] images in
             self?.images = images
-            if !images.isEmpty {
-                self?.imagesLabel.isHidden = false
-            }
             DispatchQueue.main.async {
+                self?.imagesLabel.isHidden = images.isEmpty
                 MBProgressHUD.hide(for: self!.view, animated: true)
                 self?.tableView.reloadData()
             }
         }.disposed(by: rx.disposeBag)
         
         viewModel?.requestFailure.bind { [weak self] _ in
+            let alert = UIAlertController(title: "Some troubles..", message: "Couldn't find the picture :(", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            
             DispatchQueue.main.async {
                 MBProgressHUD.hide(for: self!.view, animated: true)
+                self?.present(alert, animated: true)
             }
         }.disposed(by: rx.disposeBag)
     }
@@ -82,8 +141,8 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: ImageTableViewCell.id, for: indexPath) as! ImageTableViewCell
         
         cell.imageResponse = images[indexPath.row]
-        
         cell.isUserInteractionEnabled = false
+        cell.separatorView.isHidden = indexPath.row == images.count - 1
         
         return cell
     }
