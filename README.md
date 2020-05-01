@@ -1,1 +1,1 @@
-# MovaTestApp
+# StrongJunTestApp
